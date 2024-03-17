@@ -2,7 +2,7 @@ using System.Text.Json;
 
 public static class SetsAndMapsTester {
     public static void Run() {
-        // Problem 1: Find Pairs with Sets
+         // Problem 1: Find Pairs with Sets
         Console.WriteLine("\n=========== Finding Pairs TESTS ===========");
         DisplayPairs(new[] { "am", "at", "ma", "if", "fi" });
         // ma & am
@@ -27,7 +27,6 @@ public static class SetsAndMapsTester {
         // 31 & 13
 
         // Problem 2: Degree Summary
-        // Sample Test Cases (may not be comprehensive) 
         Console.WriteLine("\n=========== Census TESTS ===========");
         Console.WriteLine(string.Join(", ", SummarizeDegrees("census.txt")));
         // Results may be in a different order:
@@ -37,7 +36,6 @@ public static class SetsAndMapsTester {
         // [5th-6th, 333], [10th, 933], [1st-4th, 168], [Preschool, 51], [12th, 433]}
 
         // Problem 3: Anagrams
-        // Sample Test Cases (may not be comprehensive) 
         Console.WriteLine("\n=========== Anagram TESTS ===========");
         Console.WriteLine(IsAnagram("CAT", "ACT")); // true
         Console.WriteLine(IsAnagram("DOG", "GOOD")); // false
@@ -49,6 +47,8 @@ public static class SetsAndMapsTester {
         Console.WriteLine(IsAnagram("tom marvolo riddle", "i am lord voldemort")); // true
         Console.WriteLine(IsAnagram("Eleven plus Two", "Twelve Plus One")); // true
         Console.WriteLine(IsAnagram("Eleven plus One", "Twelve Plus One")); // false
+    
+    
 
         // Problem 4: Maze
         Console.WriteLine("\n=========== Maze TESTS ===========");
@@ -78,7 +78,8 @@ public static class SetsAndMapsTester {
         // Problem 5: Earthquake
         // Sample Test Cases (may not be comprehensive) 
         Console.WriteLine("\n=========== Earthquake TESTS ===========");
-        EarthquakeDailySummary();
+        EarthquakeDailySummary().Wait();
+
 
         // Sample output from the function.  Number of earthquakes, places, and magnitudes will vary.
         // 1km NE of Pahala, Hawaii - Mag 2.36
@@ -89,78 +90,73 @@ public static class SetsAndMapsTester {
         // 4km SW of Volcano, Hawaii - Mag 1.99
     }
 
-    /// <summary>
-    /// The words parameter contains a list of two character 
-    /// words (lower case, no duplicates). Using sets, find an O(n) 
-    /// solution for displaying all symmetric pairs of words.  
-    ///
-    /// For example, if <c>words</c> was: <c>[am, at, ma, if, fi]</c>, we would display:
-    /// <code>
-    /// am &amp; ma
-    /// if &amp; fi
-    /// </code>
-    /// The order of the display above does not matter. <c>at</c> would not 
-    /// be displayed because <c>ta</c> is not in the list of words.
-    ///
-    /// As a special case, if the letters are the same (example: 'aa') then
-    /// it would not match anything else (remember the assumption above
-    /// that there were no duplicates) and therefore should not be displayed.
-    /// </summary>
-    /// <param name="words">An array of 2-character words (lowercase, no duplicates)</param>
-    private static void DisplayPairs(string[] words) {
-        // To display the pair correctly use something like:
-        // Console.WriteLine($"{word} & {pair}");
-        // Each pair of words should displayed on its own line.
+     // Problem 1: Find Pairs with Sets
+      private static void DisplayPairs(string[] words) {
+        HashSet<string> seen = new HashSet<string>();
+
+        foreach (var word in words) {
+            string reverse = Reverse(word);
+            if (seen.Contains(reverse)) {
+                Console.WriteLine($"{word} & {reverse}");
+            } else {
+                seen.Add(word);
+            }
+        }
     }
 
-    /// <summary>
-    /// Read a census file and summarize the degrees (education)
-    /// earned by those contained in the file.  The summary
-    /// should be stored in a dictionary where the key is the
-    /// degree earned and the value is the number of people that 
-    /// have earned that degree.  The degree information is in
-    /// the 4th column of the file.  There is no header row in the
-    /// file.
-    /// </summary>
-    /// <param name="filename">The name of the file to read</param>
-    /// <returns>fixed array of divisors</returns>
-    /// #############
-    /// # Problem 2 #
-    /// #############
+    private static string Reverse(string word) {
+        char[] charArray = word.ToCharArray();
+        Array.Reverse(charArray);
+        return new string(charArray);
+    }
+
+     // Problem 2: Degree Summary
     private static Dictionary<string, int> SummarizeDegrees(string filename) {
-        var degrees = new Dictionary<string, int>();
-        foreach (var line in File.ReadLines(filename)) {
-            var fields = line.Split(",");
-            // Todo Problem 2 - ADD YOUR CODE HERE
+        Dictionary<string, int> degreeCounts = new Dictionary<string, int>();
+
+        using (StreamReader reader = new StreamReader(filename)) {
+            while (!reader.EndOfStream) {
+                string line = reader.ReadLine();
+                string[] parts = line.Split(',');
+
+                if (parts.Length > 3) {
+                    string degree = parts[3].Trim();
+                    if (degreeCounts.ContainsKey(degree)) {
+                        degreeCounts[degree]++;
+                    } else {
+                        degreeCounts[degree] = 1;
+                    }
+                }
+            }
         }
 
-        return degrees;
+        return degreeCounts;
     }
 
-    /// <summary>
-    /// Determine if 'word1' and 'word2' are anagrams.  An anagram
-    /// is when the same letters in a word are re-organized into a 
-    /// new word.  A dictionary is used to solve the problem.
-    /// 
-    /// Examples:
-    /// is_anagram("CAT","ACT") would return true
-    /// is_anagram("DOG","GOOD") would return false because GOOD has 2 O's
-    /// 
-    /// Important Note: When determining if two words are anagrams, you
-    /// should ignore any spaces.  You should also ignore cases.  For 
-    /// example, 'Ab' and 'Ba' should be considered anagrams
-    /// 
-    /// Reminder: You can access a letter by index in a string by 
-    /// using the [] notation.
-    /// </summary>
-    /// #############
-    /// # Problem 3 #
-    /// #############
+     // Problem 3: Anagrams
     private static bool IsAnagram(string word1, string word2) {
-        // Todo Problem 3 - ADD YOUR CODE HERE
-        return false;
+        Dictionary<char, int> charCounts1 = GetCharCounts(word1.ToLower().Replace(" ", ""));
+        Dictionary<char, int> charCounts2 = GetCharCounts(word2.ToLower().Replace(" ", ""));
+
+        return charCounts1.OrderBy(pair => pair.Key)
+                          .SequenceEqual(charCounts2.OrderBy(pair => pair.Key));
     }
 
+    private static Dictionary<char, int> GetCharCounts(string word) {
+        Dictionary<char, int> charCounts = new Dictionary<char, int>();
+
+        foreach (char c in word) {
+            if (charCounts.ContainsKey(c)) {
+                charCounts[c]++;
+            } else {
+                charCounts[c] = 1;
+            }
+        }
+
+        return charCounts;
+    }
+
+    
     /// <summary>
     /// Sets up the maze dictionary for problem 4
     /// </summary>
@@ -220,20 +216,26 @@ public static class SetsAndMapsTester {
     /// https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
     /// 
     /// </summary>
-    private static void EarthquakeDailySummary() {
-        const string uri = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson";
-        using var client = new HttpClient();
-        using var getRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
-        using var jsonStream = client.Send(getRequestMessage).Content.ReadAsStream();
-        using var reader = new StreamReader(jsonStream);
-        var json = reader.ReadToEnd();
+   public static async Task EarthquakeDailySummary() {
+    const string uri = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson";
+
+    using var client = new HttpClient();
+    using var response = await client.GetAsync(uri);
+    
+    if (response.IsSuccessStatusCode) {
+        var jsonStream = await response.Content.ReadAsStreamAsync();
+
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var featureCollection = await JsonSerializer.DeserializeAsync<FeatureCollection>(jsonStream, options);
 
-        var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(json, options);
-
-        // TODO:
-        // 1. Add code in FeatureCollection.cs to describe the JSON using classes and properties 
-        // on those classes so that the call to Deserialize above works properly.
-        // 2. Add code below to print out each place a earthquake has happened today and its magitude.
+        if (featureCollection != null && featureCollection.Features != null) {
+            Console.WriteLine("=========== Earthquake TESTS ===========");
+            foreach (var feature in featureCollection.Features) {
+                Console.WriteLine($"{feature.Properties.Place} - Mag {feature.Properties.Mag}");
+            }
+        }
+    } else {
+        Console.WriteLine("Failed to retrieve earthquake data.");
     }
+}
 }
